@@ -77,7 +77,7 @@ class App:
 
         self.port_field = ttk.Entry(
             self.root,
-            width=45,
+            width=36,
             font= self.font,
          
         )
@@ -95,7 +95,7 @@ class App:
         
     def connect(self):
         try:
-            ip = self.ip_field.get()
+            ip: str = self.ip_field.get()
             port = int(self.port_field.get())
             self.conn = Client(ip,port,"")
             if self.conn.connected:

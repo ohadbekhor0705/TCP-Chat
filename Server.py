@@ -1,5 +1,5 @@
 import socket
-
+from cryptography.fernet import Fernet
 import threading
 
 
@@ -8,15 +8,22 @@ class Server:
         self.ip = ip
         self.port = port
         self.clients: set[socket.socket] = set()
+        with open("key.bin","wb") as f:
+            f.write(Fernet.generate_key())
+        self.f: Fernet = None
+        with open ("key.bin", "rb") as f:
+            self. f = Fernet(f.read())
+        
     def handle_client(self, conn: socket.socket, addr):
         connected = True
         
         while connected:
             try:
-                message = conn.recv(1024)
+                message: bytes = conn.recv(1024)
                 if message:
-                    sending_thread = threading.Thread(target=self.send_to_all_clients,args=(message))
-                    print(f"[{addr}] {message.decode("utf-8")}")
+                    decrypted_message: bytes = self.f.decrypt(message)
+                    sending_thread = threading.Thread(target=self.send_to_all_clients,args=(conn,message))
+                    print(f"[{addr}] {decrypted_message.decode("utf-8")}")
                     if len(self.clients) != 0:
                         sending_thread.start()
                     if message.decode() == "!dis":
